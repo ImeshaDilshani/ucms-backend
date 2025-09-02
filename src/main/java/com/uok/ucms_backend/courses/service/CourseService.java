@@ -203,4 +203,100 @@ public class CourseService {
         
         return response;
     }
+    
+    // Student-specific methods
+    
+    /**
+     * Get available courses for students with pagination and filtering
+     * Only returns active courses
+     */
+    @Transactional(readOnly = true)
+    public Page<CourseResponse> getAvailableCoursesForStudents(String code, String name, String department, Pageable pageable) {
+        log.info("Fetching available courses for students with filters - code: {}, name: {}, department: {}", code, name, department);
+        
+        Page<Course> coursePage = courseRepository.findActiveCoursesWithFilters(code, name, department, pageable);
+        return coursePage.map(this::mapToResponse);
+    }
+    
+    /**
+     * Get all available courses for students without pagination
+     * Only returns active courses
+     */
+    @Transactional(readOnly = true)
+    public List<CourseResponse> getAllAvailableCoursesForStudents() {
+        log.info("Fetching all available courses for students");
+        
+        List<Course> courses = courseRepository.findByActiveTrue();
+        return courses.stream()
+            .map(this::mapToResponse)
+            .collect(Collectors.toList());
+    }
+    
+    /**
+     * Get course details for student by ID
+     * Only returns active courses
+     */
+    @Transactional(readOnly = true)
+    public CourseResponse getCourseForStudent(Long courseId) {
+        log.info("Fetching course details for student - ID: {}", courseId);
+        
+        Course course = courseRepository.findByIdAndActiveTrue(courseId)
+            .orElseThrow(() -> new IllegalArgumentException("Course not found or not available: " + courseId));
+        
+        return mapToResponse(course);
+    }
+    
+    /**
+     * Get course details for student by code
+     * Only returns active courses
+     */
+    @Transactional(readOnly = true)
+    public CourseResponse getCourseByCodeForStudent(String code) {
+        log.info("Fetching course details for student - code: {}", code);
+        
+        Course course = courseRepository.findByCodeAndActiveTrue(code.toUpperCase())
+            .orElseThrow(() -> new IllegalArgumentException("Course not found or not available: " + code));
+        
+        return mapToResponse(course);
+    }
+    
+    /**
+     * Search courses for students by keyword
+     * Searches in course name and description, only returns active courses
+     */
+    @Transactional(readOnly = true)
+    public Page<CourseResponse> searchCoursesForStudents(String keyword, Pageable pageable) {
+        log.info("Searching courses for students with keyword: {}", keyword);
+        
+        Page<Course> coursePage = courseRepository.searchActiveCoursesbyKeyword(keyword, pageable);
+        return coursePage.map(this::mapToResponse);
+    }
+    
+    /**
+     * Get courses by department for students
+     * Only returns active courses
+     */
+    @Transactional(readOnly = true)
+    public List<CourseResponse> getCoursesByDepartmentForStudents(String department) {
+        log.info("Fetching courses for students by department: {}", department);
+        
+        List<Course> courses = courseRepository.findByDepartmentAndActiveTrueOrderByCode(department);
+        return courses.stream()
+            .map(this::mapToResponse)
+            .collect(Collectors.toList());
+    }
+    
+    /**
+     * Get courses by credit value for students
+     * Only returns active courses
+     */
+    @Transactional(readOnly = true)
+    public List<CourseResponse> getCoursesByCreditValueForStudents(Integer credits) {
+        log.info("Fetching courses for students by credits: {}", credits);
+        
+        List<Course> courses = courseRepository.findByCreditsAndActiveTrueOrderByCode(credits);
+        return courses.stream()
+            .map(this::mapToResponse)
+            .collect(Collectors.toList());
+    }
 }
