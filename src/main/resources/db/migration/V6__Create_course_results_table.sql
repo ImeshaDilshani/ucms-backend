@@ -1,0 +1,26 @@
+-- Create course results table for grading system
+CREATE TABLE course_results (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    created_at TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6),
+    updated_at TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+    student_id BIGINT NOT NULL,
+    course_id BIGINT NOT NULL,
+    lecturer_id BIGINT NOT NULL,
+    student_number VARCHAR(32) NOT NULL,
+    course_code VARCHAR(16) NOT NULL,
+    course_name VARCHAR(255) NOT NULL,
+    marks DECIMAL(5,2),
+    grade VARCHAR(2),
+    remarks TEXT,
+    graded_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    is_released BOOLEAN NOT NULL DEFAULT FALSE,
+    released_at TIMESTAMP(6) NULL,
+    UNIQUE KEY unique_student_course_result (student_id, course_id),
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+    FOREIGN KEY (lecturer_id) REFERENCES lecturers(id) ON DELETE CASCADE,
+    INDEX idx_student_number (student_number),
+    INDEX idx_course_code (course_code),
+    INDEX idx_is_released (is_released),
+    INDEX idx_lecturer_course (lecturer_id, course_id)
+);
